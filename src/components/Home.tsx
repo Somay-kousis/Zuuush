@@ -112,7 +112,7 @@ const Home: React.FC = () => (
                 <div className="team-photo hover-scale">
                   <img src={somayImg} alt="Somay" />
                 </div>
-                <p className="team-name">Somay</p>
+                <p className="team-name">Anant</p>
                 <p className="team-role">UI/UX & Frontend</p>
               </div>
               <div className="kriti team-member card-3d stagger-animation">
