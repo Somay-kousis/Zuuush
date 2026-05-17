@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, LayoutDashboard, Plus, Lock, Globe } from 'lucide-react';
+import { Plus, Lock, Globe } from 'lucide-react';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Navigation from './Navigation';
