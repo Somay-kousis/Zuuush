@@ -1,216 +1,103 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Chart, registerables } from 'chart.js';
-import profilePic from '../images/somay.jpg';
+import { motion } from 'framer-motion';
+import { User, Bell, Shield, LogOut } from 'lucide-react';
+import Card from './ui/Card';
+import Button from './ui/Button';
 
-// Register Chart.js components
-Chart.register(...registerables);
+import Navigation from './Navigation';
+
+const Toggle = ({ active, onToggle }: { active: boolean, onToggle: () => void }) => (
+  <button 
+    onClick={onToggle}
+    className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${active ? 'bg-primary-600' : 'bg-black/10'}`}
+  >
+    <motion.div 
+      className="w-4 h-4 bg-white rounded-full shadow-sm"
+      animate={{ x: active ? 24 : 0 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+    />
+  </button>
+);
 
 const Profile: React.FC = () => {
-  const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstance = useRef<Chart | null>(null);
+  const [settings, setSettings] = useState({
+    notifications: true,
+    quietMode: false,
+    darkMode: false,
+    privateProfile: true
+  });
 
-  useEffect(() => {
-    if (chartRef.current) {
-      const ctx = chartRef.current.getContext('2d');
-      if (ctx) {
-        // Destroy existing chart if it exists
-        if (chartInstance.current) {
-          chartInstance.current.destroy();
-        }
-
-        // Create new chart
-        chartInstance.current = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{
-              label: 'Daily Progress',
-              data: [8, 7, 9, 6, 8, 9, 7],
-              borderColor: 'rgba(147, 51, 234, 1)',
-              backgroundColor: 'rgba(147, 51, 234, 0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: 'rgba(147, 51, 234, 1)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 10,
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                },
-                ticks: {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  font: {
-                    size: 12
-                  }
-                }
-              },
-              x: {
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                },
-                ticks: {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  font: {
-                    size: 12
-                  }
-                }
-              }
-            },
-            elements: {
-              point: {
-                hoverBackgroundColor: 'rgba(147, 51, 234, 0.8)'
-              }
-            }
-          }
-        });
-      }
-    }
-
-    // Cleanup function
-    return () => {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
-  }, []);
+  const toggle = (key: keyof typeof settings) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
-    <>
-      <div className="floating-shapes global-shapes">
-        <div className="floating-shape" />
-        <div className="floating-shape" />
-        <div className="floating-shape" />
-        <div className="floating-shape" />
-        <div className="floating-shape" />
-        <div className="floating-shape" />
-      </div>
-      <div className="premium-grid" />
-      
-      {/* Navigation Sidebar */}
-      <nav className="navigation">
-        <Link to="/" className="nav-item" title="Home">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9,22 9,12 15,12 15,22"/>
-          </svg>
-        </Link>
-        <Link to="/dashboard" className="nav-item" title="Dashboard">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <rect x="3" y="13" width="7" height="8"/>
-            <rect x="14" y="3" width="7" height="18"/>
-          </svg>
-        </Link>
-        <Link to="/profile" className="nav-item active" title="Profile">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <circle cx="12" cy="8" r="4"/>
-            <path d="M4 20c0-4 8-4 8-4s8 0 8 4"/>
-          </svg>
-        </Link>
-        <Link to="/rooms" className="nav-item" title="Rooms">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </Link>
-        <Link to="/create-room" className="nav-item" title="Create Room">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </Link>
-        <Link to="/challenges" className="nav-item" title="Challenges">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <rect x="2" y="7" width="20" height="14" rx="2"/>
-            <path d="M16 3v4"/>
-            <path d="M8 3v4"/>
-          </svg>
-        </Link>
-        <Link to="/achievements" className="nav-item" title="Achievements">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <circle cx="12" cy="8" r="7"/>
-            <polyline points="8.21 13.89 7.5 21 12 18.5 16.5 21 15.79 13.88"/>
-          </svg>
-        </Link>
-      </nav>
+    <div className="min-h-screen flex text-textPrimary md:pl-24 pb-24 md:pb-0">
+      <Navigation />
 
-      <main className="profile-container">
-        <div className="profile-header-progress-row">
-          <section className="profile-header glass">
-            <div className="profile-info">
-              <img src={profilePic} alt="Somay's Profile" className="profile-pic" width={140} height={140} />
-              <div className="profile-details">
-                <h1 className="profile-name premium-title">Somay</h1>
-                <span className="profile-pronouns">he/him</span>
-                <p className="profile-bio">Your smile is pretty, why dont you smile more often 🫧</p>
-                <button className="btn btn-primary edit-profile-btn">Edit Profile</button>
+      <main className="flex-1 max-w-4xl mx-auto px-6 md:px-8 py-10 md:py-12 pb-32">
+        <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-serif text-primary-900 mb-3">Settings</h1>
+            <p className="text-textSecondary text-lg">Manage your space and preferences.</p>
+          </div>
+          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 shadow-inner-soft">
+            <User className="w-8 h-8" />
+          </div>
+        </motion.header>
+
+        <div className="space-y-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card glass className="p-0 overflow-hidden">
+              <div className="p-8 border-b border-black/5 bg-white/40">
+                <h3 className="text-xl font-medium flex items-center gap-3"><Bell className="w-6 h-6 text-accent" /> Notifications</h3>
               </div>
-            </div>
-          </section>
-          <section className="profile-progress glass">
-            <div className="section-header">
-              <h2 className="premium-section-title">Daily Logs & Progress</h2>
-            </div>
-            <div className="progress-graph-container">
-              <canvas ref={chartRef} width={400} height={180} aria-label="Progress Graph"></canvas>
-            </div>
-            <div className="log-history">
-              <h3>Recent Daily Logs</h3>
-              <ul className="log-entries">
-                <li className="log-entry glass">Had a great meditation session today. Felt calm and focused.</li>
-                <li className="log-entry glass">Went for a 30-minute walk. Energy levels up!</li>
-                <li className="log-entry glass">Practiced gratitude journaling. Mood improved.</li>
-              </ul>
-            </div>
-          </section>
+              <div className="p-8 space-y-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium mb-1">Daily Reminders</div>
+                    <div className="text-sm text-textSecondary">Gentle nudges to check in with yourself.</div>
+                  </div>
+                  <Toggle active={settings.notifications} onToggle={() => toggle('notifications')} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium mb-1">Quiet Mode</div>
+                    <div className="text-sm text-textSecondary">Mute all notifications from 10 PM to 8 AM.</div>
+                  </div>
+                  <Toggle active={settings.quietMode} onToggle={() => toggle('quietMode')} />
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card glass className="p-0 overflow-hidden">
+              <div className="p-8 border-b border-black/5 bg-white/40">
+                <h3 className="text-xl font-medium flex items-center gap-3"><Shield className="w-6 h-6 text-primary-600" /> Privacy</h3>
+              </div>
+              <div className="p-8 space-y-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium mb-1">Private Profile</div>
+                    <div className="text-sm text-textSecondary">Hide your check-in streak from community rooms.</div>
+                  </div>
+                  <Toggle active={settings.privateProfile} onToggle={() => toggle('privateProfile')} />
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="pt-8">
+            <Button variant="ghost" className="text-red-500 hover:bg-red-50 hover:text-red-600 gap-2">
+              <LogOut className="w-4 h-4" /> Sign Out
+            </Button>
+          </motion.div>
         </div>
-        <section className="profile-achievements glass">
-          <div className="section-header">
-            <h2 className="premium-section-title">Achievements</h2>
-          </div>
-          <div className="achievements-grid">
-            <div className="achievement-card glass">
-              <span className="achievement-icon">🌱</span>
-              <div className="achievement-info">
-                <h3>Streak Master</h3>
-                <p>Logged in for 30 days straight</p>
-              </div>
-            </div>
-            <div className="achievement-card glass">
-              <span className="achievement-icon">🫧</span>
-              <div className="achievement-info">
-                <h3>Mindfulness Guru</h3>
-                <p>Completed 10 meditation sessions</p>
-              </div>
-            </div>
-            <div className="achievement-card glass">
-              <span className="achievement-icon">🐳</span>
-              <div className="achievement-info">
-                <h3>Hydration Hero</h3>
-                <p>Met water goal for 7 days</p>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
-    </>
+    </div>
   );
 };
 
-export default Profile; 
+export default Profile;

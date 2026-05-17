@@ -1,155 +1,150 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, ArrowLeft, Heart } from 'lucide-react';
+import Card from './ui/Card';
 
-const ChatRoom: React.FC = () => (
-  <>
-    <div className="floating-shapes global-shapes">
-      <div className="floating-shape" />
-      <div className="floating-shape" />
-      <div className="floating-shape" />
-      <div className="floating-shape" />
-      <div className="floating-shape" />
-      <div className="floating-shape" />
+interface Message {
+  id: string;
+  text: string;
+  isBot: boolean;
+  timestamp: string;
+}
+
+const initialMessages: Message[] = [
+  { id: '1', text: 'Hello. This is a safe, guided space. What is on your mind today?', isBot: true, timestamp: '10:00 AM' }
+];
+
+const botResponses = [
+  "I hear you. It's completely valid to feel that way.",
+  "Take a deep breath. You don't have to figure it all out right now.",
+  "That sounds really heavy. Be gentle with yourself today.",
+  "Thank you for sharing that. It takes courage to put it into words.",
+];
+
+const ChatRoom: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      text: input,
+      isBot: false,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const botMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        text: botResponses[Math.floor(Math.random() * botResponses.length)],
+        isBot: true,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, botMsg]);
+      setIsTyping(false);
+    }, 1500 + Math.random() * 1000); // Simulate natural typing delay
+  };
+
+  return (
+    <div className="min-h-screen flex text-textPrimary bg-background/50">
+      <main className="flex-1 max-w-3xl mx-auto w-full h-screen flex flex-col relative">
+        
+        {/* Chat Header */}
+        <header className="px-6 py-4 flex items-center gap-4 bg-surfaceGlass backdrop-blur-xl border-b border-white/40 sticky top-0 z-10">
+          <Link to="/rooms" className="p-2 rounded-full hover:bg-black/5 transition-colors text-textSecondary">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex-1">
+            <h2 className="text-lg font-medium text-primary-900">Guided Space</h2>
+            <p className="text-xs text-primary-600 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" /> Zuuush Guide active
+            </p>
+          </div>
+          <button className="p-2 text-accent-dark hover:bg-accent-light rounded-full transition-colors">
+            <Heart className="w-5 h-5" />
+          </button>
+        </header>
+
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className={`flex flex-col ${msg.isBot ? 'items-start' : 'items-end'}`}
+              >
+                <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm ${
+                  msg.isBot 
+                    ? 'bg-white border border-white/60 text-textPrimary rounded-tl-sm shadow-soft' 
+                    : 'bg-primary-600 text-white rounded-tr-sm shadow-md'
+                }`}>
+                  <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>
+                </div>
+                <span className="text-[10px] text-textMuted mt-1 px-1">{msg.timestamp}</span>
+              </motion.div>
+            ))}
+            
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-start"
+              >
+                <div className="bg-white/60 backdrop-blur-sm border border-white/40 rounded-2xl rounded-tl-sm p-4 shadow-soft flex gap-1">
+                  <motion.span className="w-2 h-2 rounded-full bg-primary-400" animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-primary-400" animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} />
+                  <motion.span className="w-2 h-2 rounded-full bg-primary-400" animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Chat Input */}
+        <div className="p-8 bg-background">
+          <Card glass className="p-3 rounded-full flex items-center gap-2 pr-3">
+            <form onSubmit={handleSend} className="flex-1 flex items-center">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your thoughts..."
+                className="flex-1 bg-transparent border-none focus:ring-0 px-6 py-3 text-textPrimary placeholder:text-textMuted outline-none text-lg"
+              />
+              <button 
+                type="submit" 
+                disabled={!input.trim()}
+                className={`p-4 rounded-full flex items-center justify-center transition-all ${
+                  input.trim() ? 'bg-primary-600 text-white shadow-md hover:bg-primary-500' : 'bg-black/5 text-textMuted cursor-not-allowed'
+                }`}
+              >
+                <Send className="w-5 h-5 ml-0.5" />
+              </button>
+            </form>
+          </Card>
+        </div>
+
+      </main>
     </div>
-    <div className="premium-grid" />
-    
-    {/* Navigation Sidebar */}
-    <nav className="navigation">
-      <Link to="/" className="nav-item" title="Home">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9,22 9,12 15,12 15,22"/>
-        </svg>
-      </Link>
-      <Link to="/dashboard" className="nav-item" title="Dashboard">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <rect x="3" y="13" width="7" height="8"/>
-          <rect x="14" y="3" width="7" height="18"/>
-        </svg>
-      </Link>
-      <Link to="/profile" className="nav-item" title="Profile">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M4 20c0-4 8-4 8-4s8 0 8 4"/>
-        </svg>
-      </Link>
-      <Link to="/rooms" className="nav-item" title="Rooms">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </Link>
-      <Link to="/create-room" className="nav-item" title="Create Room">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-      </Link>
-      <Link to="/challenges" className="nav-item" title="Challenges">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <rect x="2" y="7" width="20" height="14" rx="2"/>
-          <path d="M16 3v4"/>
-          <path d="M8 3v4"/>
-        </svg>
-      </Link>
-      <Link to="/achievements" className="nav-item" title="Achievements">
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-          <circle cx="12" cy="8" r="7"/>
-          <polyline points="8.21 13.89 7.5 21 12 18.5 16.5 21 15.79 13.88"/>
-        </svg>
-      </Link>
-    </nav>
+  );
+};
 
-    <main className="chatroom-container">
-      <div className="chatroom-layout">
-        <div className="sidebar">
-          <div className="sidebar-header">
-            <h2>Rooms</h2>
-            <Link to="/create-room" className="create-room-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-            </Link>
-          </div>
-          <div className="room-list">
-            <div className="room-item active">
-              <div className="room-icon">🧘</div>
-              <div className="room-info">
-                <h3>Mindful Living</h3>
-                <p>Last message: 2 min ago</p>
-              </div>
-            </div>
-            <div className="room-item">
-              <div className="room-icon">🏃</div>
-              <div className="room-info">
-                <h3>Fitness Friends</h3>
-                <p>Last message: 5 min ago</p>
-              </div>
-            </div>
-            <div className="room-item">
-              <div className="room-icon">📝</div>
-              <div className="room-info">
-                <h3>Daily Journal</h3>
-                <p>Last message: 10 min ago</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="chat-area">
-          <div className="chat-header">
-            <h2>Mindful Living</h2>
-            <div className="room-stats">
-              <span>1.2k members</span>
-              <span>•</span>
-              <span>Online</span>
-            </div>
-          </div>
-          <div className="messages-container">
-            <div className="message">
-              <div className="message-avatar">👤</div>
-              <div className="message-content">
-                <div className="message-header">
-                  <span className="username">Sarah</span>
-                  <span className="timestamp">2:30 PM</span>
-                </div>
-                <p>Just completed my morning meditation! Feeling so much more centered today. Anyone else tried the new breathing exercise?</p>
-              </div>
-            </div>
-            <div className="message">
-              <div className="message-avatar">👤</div>
-              <div className="message-content">
-                <div className="message-header">
-                  <span className="username">Mike</span>
-                  <span className="timestamp">2:32 PM</span>
-                </div>
-                <p>Yes! The 4-7-8 breathing technique is amazing. I've been using it before bed and my sleep quality has improved so much.</p>
-              </div>
-            </div>
-            <div className="message">
-              <div className="message-avatar">👤</div>
-              <div className="message-content">
-                <div className="message-header">
-                  <span className="username">Emma</span>
-                  <span className="timestamp">2:35 PM</span>
-                </div>
-                <p>I'm new to meditation. Any tips for beginners? I find it hard to quiet my mind.</p>
-              </div>
-            </div>
-          </div>
-          <div className="message-input">
-            <input type="text" placeholder="Type your message..." />
-            <button className="send-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22,2 15,22 11,13 2,9"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
-  </>
-);
-
-export default ChatRoom; 
+export default ChatRoom;

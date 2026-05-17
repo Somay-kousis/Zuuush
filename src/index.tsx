@@ -4,15 +4,6 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router } from 'react-router-dom';
-import './css/main-dashboard.css';
-import './css/components.css';
-import './css/animations.css';
-import './css/achievements.css';
-import './css/chatroom.css';
-import './css/profile-page.css';
-import './css/search-room.css';
-import './css/wellness-challenges.css';
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

@@ -1,22 +1,47 @@
-import React from 'react';
-import { motion, useAnimation, useMotionValue, useTransform, useSpring, useReducedMotion, AnimatePresence, easeInOut } from 'framer-motion';
+import React, { ReactNode } from 'react';
+import { motion, Variants, Transition } from 'framer-motion';
 
-const variants = {
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeInOut } },
-  exit: { opacity: 0, y: -30, transition: { duration: 0.4, ease: easeInOut } }
+interface PageTransitionProps {
+  children: ReactNode;
+}
+
+const pageVariants: Variants = {
+  initial: {
+    opacity: 0,
+    y: 10,
+    filter: 'blur(4px)'
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)'
+  },
+  out: {
+    opacity: 0,
+    y: -10,
+    filter: 'blur(4px)'
+  }
 };
 
-const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <motion.div
-    initial="initial"
-    animate="animate"
-    exit="exit"
-    variants={variants}
-    style={{ minHeight: '100vh' }}
-  >
-    {children}
-  </motion.div>
-);
+const pageTransition: Transition = {
+  type: 'tween',
+  ease: "easeOut",
+  duration: 0.8
+};
 
-export default PageTransition; 
+const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
+  return (
+    <motion.div
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+      className="w-full h-full"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+export default PageTransition;
